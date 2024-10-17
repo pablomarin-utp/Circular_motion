@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Video Circular</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Video Circular</h1>
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes">
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+      
+        <form method="POST" action="/">
+            <label for="video_name">Nombre del video:</label>
+            <input type="text" id="video_name" name="video_name" required>
+
+            <label for="duration">Duración del video (segundos):</label>
+            <input type="number" id="duration" name="duration" min="1" max="300" required>
+
+            <label for="radius1">Radio del primer círculo (píxeles):</label>
+            <input type="number" id="radius1" name="radius1" min="1" max="500" required>
+
+            <label for="turns">Número de vueltas:</label>
+            <input type="number" id="turns" name="turns" min="1" max="100" required>
+
+            <label for="save_path">Ruta de guardado:</label>
+            <input type="text" id="save_path" name="save_path" required>
+
+            <button type="submit">Generar video</button>
+        </form>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+          <input type="file" name="video_route" id="video_route" accept="video/*">
+          <button type="submit" id="calculate_video" name="calculate_video">Calcular</button>
+        </form>
+    </div>
+</body>
+</html>
