@@ -4,9 +4,12 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from calculate import calculate_moves
 
 app = Flask(__name__)
-app.secret_key = "aguamil900ml"  # Cambia esto por una clave secreta en producción
-@app.route("/sumbit", methods=["GET","POST"])
+app.secret_key = "aguamil900ml"  
 
+@app.route("/sumbit", methods=["GET","POST"])
+def show():
+    print("hola")
+    
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
