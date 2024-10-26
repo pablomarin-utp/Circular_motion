@@ -9,7 +9,7 @@ class VideoGeneratorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Generador de Video Circuo hacelar")
-        self.root.geometry("400x400")
+        self.root.geometry("400x700")
         self.root.configure(bg="#f7f7f7")
 
         # Etiqueta de título
@@ -107,27 +107,37 @@ class VideoGeneratorApp:
         turns = int(self.turns_spinbox.get())
 
         # Generar el video con los parámetros proporcionados
-        self.create_video(video_name, duration, radius1, turns)
+        self.create_video(video_name, duration, radius1, turns, [2, 100])
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
-    def create_video(self, video_name, duration, radius1, turns):
-        fps = 30
+    def create_video(self, video_name, duration, radius1, turns, forces):
+        fps = 120
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
-
+        time_force_applied = forces[0] * fps  # Momento en el que se aplica la fuerza, en fotogramas
+        force_value = forces[1]  # Magnitud de la fuerza aplicada
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
 
+        # Velocidad angular inicial
+        angular_velocity = 2 * np.pi * turns / (fps * duration)
+
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
-            angle = 2 * np.pi * t / (fps * duration)
+            
+            # Aplicar fuerza para cambiar la velocidad angular
+            if t == time_force_applied:
+                angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
 
-            # Posición del primer círculo
-            x1 = int(center[0] + radius1 * np.cos(turns * angle))
-            y1 = int(center[1] + radius1 * np.sin(turns * angle))
-            cv2.circle(frame, (x1, y1), 10, (0, 255, 0), -1)
+            # Calcular el ángulo actual usando la velocidad angular
+            angle = angular_velocity * t % 360
+
+            # Posición del círculo
+            x1 = int(center[0] + radius1 * np.cos(angle))
+            y1 = int(center[1] + radius1 * np.sin(angle))
+            cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)
 
             # Dibujar el círculo mayor
             cv2.circle(frame, center, radius1, (255, 255, 255), 2)
@@ -135,6 +145,7 @@ class VideoGeneratorApp:
             out.write(frame)
 
         out.release()
+
 
 if __name__ == "__main__":
     root = tk.Tk()
