@@ -32,6 +32,6 @@ This project simulates circular motion, allowing users to visualize and understa
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/PMarinPy/Circular_motion.git
+   git clone https://github.com/TheRedPill-exe/Circular_motion.git
    cd Circular_motion
    pip install -r requirements.txt
