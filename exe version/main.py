@@ -9,7 +9,7 @@ class VideoGeneratorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Generador de Video Circuo hacelar")
-        self.root.geometry("400x700")
+        self.root.geometry("400x770")
         self.root.configure(bg="#f7f7f7")
 
         # Etiqueta de título
@@ -40,6 +40,13 @@ class VideoGeneratorApp:
         self.turns_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
         self.turns_spinbox.pack(pady=5)
 
+        # Proporción píxel-centímetro
+        self.label_proportion = tk.Label(root, text="¿Cual será la proporción píxel-centímetro?\n100 px-> ", 
+                                    font=("Helvetica", 12), bg="#f7f7f7")
+        self.label_proportion.pack(pady=5)
+        self.proportion_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.proportion_spinbox.pack(pady=5)
+
         # Botón para seleccionar la ruta de guardado
         self.select_path_button = tk.Button(root, text="Seleccionar ruta de guardado", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.select_save_path)
         self.select_path_button.pack(pady=10)
@@ -66,6 +73,7 @@ class VideoGeneratorApp:
 
         self.save_path = ""
         self.video_path = ""
+
     def calculate_params(self):
         # Validar si se ha seleccionado un video
         if not self.video_path:
@@ -127,10 +135,9 @@ class VideoGeneratorApp:
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
-            # Aplicar fuerza para cambiar la velocidad angular
-            #if t == time_force_applied:
-            #    angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
-
+            #Aplicar fuerza para cambiar la velocidad angular
+            if t == time_force_applied:
+                angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
             # Calcular el ángulo actual usando la velocidad angular
             angle = angular_velocity * t % 360
 
@@ -140,7 +147,7 @@ class VideoGeneratorApp:
             cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)
 
             # Dibujar el círculo mayor
-            cv2.circle(frame, center, radius1, (255, 255, 255), 2)
+            #cv2.circle(frame, center, radius1, (255, 255, 255), 2)
 
             out.write(frame)
 
