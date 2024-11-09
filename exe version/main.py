@@ -128,8 +128,8 @@ class VideoGeneratorApp:
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
             # Aplicar fuerza para cambiar la velocidad angular
-            if t == time_force_applied:
-                angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
+            #if t == time_force_applied:
+            #    angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
 
             # Calcular el ángulo actual usando la velocidad angular
             angle = angular_velocity * t % 360
