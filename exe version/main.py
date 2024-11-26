@@ -8,7 +8,7 @@ from calculate import calculate_moves
 class VideoGeneratorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Generador de Video Circuo hacelar")
+        self.root.title("Generador de Video Circular")
         self.root.geometry("400x770")
         self.root.configure(bg="#f7f7f7")
 
@@ -119,7 +119,7 @@ class VideoGeneratorApp:
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
     def create_video(self, video_name, duration, radius1, turns, forces):
-        fps = 120
+        fps = 60
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
@@ -136,8 +136,8 @@ class VideoGeneratorApp:
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
             #Aplicar fuerza para cambiar la velocidad angular
-            if t == time_force_applied:
-                angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
+            #if t == time_force_applied:
+            #    angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
             # Calcular el ángulo actual usando la velocidad angular
             angle = angular_velocity * t % 360
 
