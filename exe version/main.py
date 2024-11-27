@@ -8,8 +8,8 @@ from calculate import calculate_moves
 class VideoGeneratorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Generador de Video Circuo hacelar")
-        self.root.geometry("400x700")
+        self.root.title("Generador de Video Circular")
+        self.root.geometry("400x800")
         self.root.configure(bg="#f7f7f7")
 
         # Etiqueta de título
@@ -40,6 +40,19 @@ class VideoGeneratorApp:
         self.turns_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
         self.turns_spinbox.pack(pady=5)
 
+        # Número de vueltas del círculo
+        self.acele = tk.Label(root, text="¿Cual será la aceleración?", font=("Helvetica", 12), bg="#f7f7f7")
+        self.acele.pack(pady=5)
+        self.acele_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.acele_spinbox.pack(pady=5)
+
+        # Proporción píxel-centímetro
+        self.label_proportion = tk.Label(root, text="¿Cual será la proporción píxel-centímetro?\n100 px-> ", 
+                                    font=("Helvetica", 12), bg="#f7f7f7")
+        self.label_proportion.pack(pady=5)
+        self.proportion_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.proportion_spinbox.pack(pady=5)
+
         # Botón para seleccionar la ruta de guardado
         self.select_path_button = tk.Button(root, text="Seleccionar ruta de guardado", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.select_save_path)
         self.select_path_button.pack(pady=10)
@@ -66,6 +79,7 @@ class VideoGeneratorApp:
 
         self.save_path = ""
         self.video_path = ""
+
     def calculate_params(self):
         # Validar si se ha seleccionado un video
         if not self.video_path:
@@ -105,18 +119,20 @@ class VideoGeneratorApp:
         duration = int(self.duration_spinbox.get())
         radius1 = int(self.radius1_spinbox.get())
         turns = int(self.turns_spinbox.get())
+        aceleration = int(self.acele_spinbox.get())
+        proportion = int(self.proportion_spinbox.get())
 
         # Generar el video con los parámetros proporcionados
-        self.create_video(video_name, duration, radius1, turns, [2, 100])
+        self.create_video(video_name, duration, radius1, turns, [0], aceleration, proportion)
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
-    def create_video(self, video_name, duration, radius1, turns, forces):
-        fps = 120
+    def create_video(self, video_name, duration, radius1, turns, forces, aceleration, proportion):
+        fps = 60
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
-        time_force_applied = forces[0] * fps  # Momento en el que se aplica la fuerza, en fotogramas
-        force_value = forces[1]  # Magnitud de la fuerza aplicada
+        #time_force_applied = forces[0] * fps  # Momento en el que se aplica la fuerza, en fotogramas
+        #force_value = forces[1]  # Magnitud de la fuerza aplicada
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
@@ -127,12 +143,12 @@ class VideoGeneratorApp:
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
-            # Aplicar fuerza para cambiar la velocidad angular
-            if t == time_force_applied:
-                angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
-
+            #Aplicar fuerza para cambiar la velocidad angular
+            #if t == time_force_applied:
+            #    angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
             # Calcular el ángulo actual usando la velocidad angular
-            angle = angular_velocity * t % 360
+            angular_velocity += aceleration / 3600
+            angle = (angular_velocity * t ) % 360 
 
             # Posición del círculo
             x1 = int(center[0] + radius1 * np.cos(angle))
@@ -140,7 +156,7 @@ class VideoGeneratorApp:
             cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)
 
             # Dibujar el círculo mayor
-            cv2.circle(frame, center, radius1, (255, 255, 255), 2)
+            #cv2.circle(frame, center, radius1, (255, 255, 255), 2)
 
             out.write(frame)
 
@@ -151,3 +167,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = VideoGeneratorApp(root)
     root.mainloop()
+#.
