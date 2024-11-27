@@ -3,40 +3,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter
 
-# Suavizado de posiciones usando media móvil
-def smooth_positions(positions, window_size=3):
-    smoothed_positions = []
-    for i in range(len(positions)):
-        x_vals = [positions[j][0] for j in range(max(0, i - window_size), i + 1)]
-        y_vals = [positions[j][1] for j in range(max(0, i - window_size), i + 1)]
-        smoothed_positions.append((np.mean(x_vals), np.mean(y_vals)))
-    for i in range(len(smoothed_positions)):
-        if i % 2 == 0:
-            print(smoothed_positions[i])
-    return smoothed_positions
-
 # Cálculo de ángulos
 def calculate_angle(positions, center):
     angles = []
     for pos in positions:
         x, y = pos
-        # Calcular el ángulo usando atan2, que devuelve el ángulo en radianes
+        # Calcular el ángulo en radianes usando atan2
         angle = np.arctan2(y - center[1], x - center[0])
-        # Convertir el ángulo a grados para facilidad de lectura
-        angles.append(np.degrees(angle))
+        angles.append(angle)
+
+    # Eliminar discontinuidades y convertir a grados
+    angles = np.unwrap(angles)  # Hace continuo el cambio angular
+    angles = np.degrees(angles)  # Convierte a grados
+    angles = angles % 360  # Ajusta al rango de 0° a 360°
+
+    for i in range(len(angles)):
+        if i % 2 == 0:
+            print(angles[i])
     return angles
 
-# Normalización de ángulos para evitar cambios bruscos al cruzar cuadrantes
-def normalize_angles(angles):
-    normalized = [angles[0]]  # Inicia con el primer ángulo
-    for i in range(1, len(angles)):
-        delta = angles[i] - normalized[-1]
-        if delta > 180:  # Ajustar cambio hacia el lado positivo
-            angles[i] -= 360
-        elif delta < -180:  # Ajustar cambio hacia el lado negativo
-            angles[i] += 360
-        normalized.append(angles[i])
-    return normalized
+def xpositions(positions):
+    xpositions = []
+    for pos in positions:
+        x, y = pos
+        xpositions.append(x)
+    #aplicar filtro de savgol
+    xpositions = savgol_filter(xpositions, 5, 3)
+    return xpositions
+
+def ypositions(positions):
+    ypositions = []
+    for pos in positions:
+        x, y = pos
+        ypositions.append(y)
+    #aplicar filtro de savgol
+    ypositions = savgol_filter(ypositions, 5, 3)
+    return ypositions
+    
 
 # Cálculo de aceleración tangencial
 def calculate_acceleration(velocities, fps, proportion=1):
@@ -48,39 +51,41 @@ def calculate_acceleration(velocities, fps, proportion=1):
     return accelerations
 
 # Graficado de los datos
-def plot_data(angles, accelerations, centripetal_acceleration, fps):
+def plot_data(positions, angles, accelerations, centripetal_acceleration, fps):
     time = np.linspace(0, len(angles) / fps, len(angles))
     time_accel = time[:-1]
 
     plt.figure(figsize=(12, 8))
 
-    # Gráfico de ángulos
+    # Angulos sin suavizar
     plt.subplot(3, 1, 1)
-    plt.plot(time, angles, label='Ángulo suavizado', color='blue')
+    plt.plot(time, angles, label='Ángulo', color='blue')
     plt.title('Variación del ángulo con respecto al tiempo (en grados)')
     plt.xlabel('Tiempo (s)')
     plt.ylabel('Ángulo (grados)')
     plt.grid(True)
     plt.legend()
 
-    # Gráfico de la aceleración tangencial
+    #Gráfico de la POSICION en x
     plt.subplot(3, 1, 2)
-    plt.plot(time_accel, accelerations, label='Aceleración Tangencial', color='green')
-    plt.title('Aceleración Tangencial a lo largo del tiempo')
+    x = xpositions(positions)
+    plt.plot(time, x, label='Posición en x', color='red')
+    plt.title('Posision en x a lo largo del tiempo')
     plt.xlabel('Tiempo (s)')
-    plt.ylabel('Aceleración (cm/s²)')
+    plt.ylabel('x(cm)')
     plt.grid(True)
     plt.legend()
 
-    # Gráfico de la aceleración centrípeta
+    #Grafico de la  
     plt.subplot(3, 1, 3)
-    plt.plot(time_accel, centripetal_acceleration, label='Aceleración Centrípeta', color='red')
-    plt.title('Aceleración Centrípeta a lo largo del tiempo')
+    y = ypositions(positions)
+    plt.plot(time, y, label='Posición en y', color='green')
+    plt.title('Posision en y a lo largo del tiempo')
     plt.xlabel('Tiempo (s)')
-    plt.ylabel('Aceleración (cm/s²)')
+    plt.ylabel('y(cm)')
     plt.grid(True)
     plt.legend()
-
+    
     plt.tight_layout()
     plt.show()
 
@@ -120,20 +125,13 @@ def calculate_moves(video_path):
     cap.release()
     cv2.destroyAllWindows()
 
-    # Suavizar posiciones
-    smoothed_positions = smooth_positions(positions, window_size=5)
-
-    # Calcular ángulos y normalizarlos
-    angles = calculate_angle(smoothed_positions, center=(320, 240))
-    normalized_angles = normalize_angles(angles)
-
-    # Suavizar ángulos
-    smoothed_angles = savgol_filter(normalized_angles, window_length=5, polyorder=2)
+    # Calcular ángulos 
+    angles = calculate_angle(positions, center=[320, 240])
 
     # Cálculo de aceleraciones y aceleración centrípeta
-    accelerations = calculate_acceleration(smoothed_angles, fps, proportion)
-    centripetal_acceleration = [(v**2) / (radius * proportion) for v in smoothed_angles[:-1]]
+    accelerations = calculate_acceleration(angles, fps, proportion)
+    centripetal_acceleration = [(v**2) / (radius * proportion) for v in angles[:-1]]
 
     # Graficar resultados
-    plot_data(smoothed_angles, accelerations, centripetal_acceleration, fps)
+    plot_data(positions, angles, accelerations, centripetal_acceleration, fps)
 
