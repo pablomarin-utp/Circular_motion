@@ -123,7 +123,9 @@ class VideoGeneratorApp:
         proportion = int(self.proportion_spinbox.get())
 
         # Generar el video con los parámetros proporcionados
-        self.create_video(video_name, duration, radius1, turns, [0], aceleration, proportion)
+        self.create_video(video_name, duration, radius1, turns, [2,100
+                                                                 
+                                                                 ], aceleration, proportion)
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
     def create_video(self, video_name, duration, radius1, turns, forces, aceleration, proportion):
@@ -131,8 +133,8 @@ class VideoGeneratorApp:
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
-        #time_force_applied = forces[0] * fps  # Momento en el que se aplica la fuerza, en fotogramas
-        #force_value = forces[1]  # Magnitud de la fuerza aplicada
+        time_force_applied = forces[0] * fps - 1  # Momento en el que se aplica la fuerza, en fotogramas
+        force_value = forces[1]  # Magnitud de la fuerza aplicada
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
@@ -144,10 +146,11 @@ class VideoGeneratorApp:
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
             #Aplicar fuerza para cambiar la velocidad angular
-            #if t == time_force_applied:
-            #    angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
+            if t == time_force_applied:
+                angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
             # Calcular el ángulo actual usando la velocidad angular
-            angular_velocity += aceleration / 3600
+            print(angular_velocity)
+            angular_velocity += aceleration / 3600 
             angle = (angular_velocity * t ) % 360 
 
             # Posición del círculo
