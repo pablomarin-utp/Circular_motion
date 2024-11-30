@@ -83,7 +83,7 @@ class VideoGeneratorApp:
     def calculate_params(self):
         # Validar si se ha seleccionado un video
         if not self.video_path:
-            messagebox.showerror("Error", "Debe seleccionar un video antes de calcular.")
+            messagebox.showerror("Error", "Debe sezleccionar un video antes de calcular.")
             return
         
         # Llamar a la función calculate_moves con la ruta del video seleccionado
@@ -157,7 +157,7 @@ class VideoGeneratorApp:
             # Posición del círculo
             x1 = int(center[0] + radius1 * np.cos(angle))
             y1 = int(center[1] + radius1 * np.sin(angle))
-            cv2.circle(frame, (x1, y1), 5, (0, 255, 0), -1)
+            cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)
 
             # Dibujar el círculo mayor
             #cv2.circle(frame, center, radius1, (255, 255, 255), 2)
