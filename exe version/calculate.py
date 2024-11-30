@@ -25,6 +25,8 @@ def calculate_angle(positions, center):
         # Calcular el ángulo en radianes usando atan2
         angle = np.arctan2(y - center[1], x - center[0])
         angles.append(angle)
+        if i % 2 == 0:
+            print(f"Angle in the frame {i}: {angle}")
 
     # Eliminar discontinuidades y convertir a grados
     angles = np.unwrap(angles)  # Hace continuo el cambio angular
@@ -51,14 +53,14 @@ def ypositions(positions):
 def calculate_velocity(angles, fps, radius):
     velocities = []
     delta_t = 1 / fps  # Tiempo entre cuadros
-
+    
     
     for i in range(1, len(angles)):
         # Diferencia angular en radianes
         delta_theta = np.radians(angles[i] - angles[i - 1])
         # Velocidad tangencial
         velocity = (radius * delta_theta / delta_t) / 100  # Convertir a cm/s
-        print (velocity)
+        print(velocity)
         if velocity < -15:
             velocity = 0
         velocities.append(velocity)
