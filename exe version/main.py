@@ -129,6 +129,7 @@ class VideoGeneratorApp:
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
     def create_video(self, video_name, duration, radius1, turns, forces, aceleration, proportion):
+        
         fps = 60
         width, height = 640, 480
         center = (width // 2, height // 2)
@@ -146,8 +147,8 @@ class VideoGeneratorApp:
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
             #Aplicar fuerza para cambiar la velocidad angular
-            if t == time_force_applied:
-                angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
+            #if t == time_force_applied:
+            #    angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
             # Calcular el ángulo actual usando la velocidad angular
             print(angular_velocity)
             angular_velocity += aceleration / 3600 
@@ -156,7 +157,7 @@ class VideoGeneratorApp:
             # Posición del círculo
             x1 = int(center[0] + radius1 * np.cos(angle))
             y1 = int(center[1] + radius1 * np.sin(angle))
-            cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)
+            cv2.circle(frame, (x1, y1), 5, (0, 255, 0), -1)
 
             # Dibujar el círculo mayor
             #cv2.circle(frame, center, radius1, (255, 255, 255), 2)
@@ -170,4 +171,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = VideoGeneratorApp(root)
     root.mainloop()
-#.
