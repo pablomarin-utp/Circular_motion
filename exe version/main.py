@@ -106,7 +106,7 @@ class VideoGeneratorApp:
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
-        radius1 /= 100  # Convertir el radio a metros
+          # Convertir el radio a metros
 
         # Velocidad angular inicial
         angular_velocity = 2 * np.pi * turns / (fps * duration)
