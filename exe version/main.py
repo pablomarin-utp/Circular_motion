@@ -123,7 +123,7 @@ class VideoGeneratorApp:
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
         masa_cuerpo = int(self.masac_spinbox.get())
         masa_polea = int(self.masap_spinbox.get())
-        torque = 1/2 * masa_polea * aceleration * radius1
+        torque = masa_cuerpo * aceleration * radius1
         angular_velocities = np.array([])  # Usar arrays de NumPy
         xpositions = np.array([])  
         ypositions = np.array([])  
