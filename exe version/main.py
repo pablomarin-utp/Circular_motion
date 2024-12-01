@@ -4,7 +4,8 @@ import numpy as np
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from calculate import calculate_moves
-from files import save_video_info
+from files import save_video_info, reduce_array_size
+
 
 class MainApp:
     def __init__(self, root):
@@ -97,7 +98,7 @@ class VideoGeneratorApp:
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
     def create_video(self, video_name, duration, radius1, turns, forces, aceleration):
-        fps = 60
+        fps = 30
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
@@ -106,11 +107,12 @@ class VideoGeneratorApp:
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
-        angular_velocities = []
-        xpositions = []
-        ypositions = []
-        angles = []
         
+        angular_velocities = np.array([])  # Usar arrays de NumPy
+        xpositions = np.array([])  
+        ypositions = np.array([])  
+        angles = np.array([])
+
         # Aceleración angular calculada como α = a_t / r (en m)
         angular_acceleration = aceleration / radius1
 
@@ -119,27 +121,35 @@ class VideoGeneratorApp:
 
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
-            
+
             # Calcular la nueva velocidad angular en cada frame
             angular_velocity += angular_acceleration / fps
-            angle = (angular_velocity * t) % 360  # El ángulo se calcula usando la velocidad angular
-
+            angle = (angular_velocity * t)  # El ángulo se calcula usando la velocidad angular
+            
             # Posición del círculo
             x1 = int(center[0] + radius1 * np.cos(angle))  # Usar el radio en píxeles
             y1 = int(center[1] + radius1 * np.sin(angle))  # Usar el radio en píxeles
             cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)  # Dibujar el círculo en el frame
 
             # Almacenar posiciones y ángulos para análisis
-            xpositions.append(x1 - center[0])
-            ypositions.append(y1 - center[1])
-            angles.append(angle)
-            angular_velocities.append(angular_velocity)
-            
+            xpositions = np.append(xpositions, x1 - center[0])
+            ypositions = np.append(ypositions, y1 - center[1])
+            angles = np.append(angles,(np.degrees(angle) % 360))
+            angular_velocities = np.append(angular_velocities, angular_velocity)
+
             out.write(frame)  # Escribir el frame en el video
 
+        # Reducir el tamaño de las listas antes de guardar
+        xpositions = reduce_array_size(xpositions)
+        ypositions = reduce_array_size(ypositions)
+        angles = reduce_array_size(angles)
+        angular_velocities = reduce_array_size(angular_velocities)
+        print(angles, len(angles))
         # Guardar información sobre el video generado
         save_video_info(video_name, duration, radius1, turns, angles, xpositions, ypositions, angular_velocities, aceleration, self.save_path)
+
         out.release()
+
 
 class VideoCalculatorApp:
     def __init__(self, root):
