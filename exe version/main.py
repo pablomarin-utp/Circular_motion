@@ -101,38 +101,44 @@ class VideoGeneratorApp:
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
-        #time_force_applied = forces[0] * fps  # Momento en el que se aplica la fuerza, en fotogramas
-        #force_value = forces[1]  # Magnitud de la fuerza aplicada
+        time_force_applied = forces[0] * fps - 1  # Momento en el que se aplica la fuerza, en fotogramas
+        force_value = forces[1]  # Magnitud de la fuerza aplicada
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
-          # Convertir el radio a metros
-
-        # Velocidad angular inicial
-        angular_velocity = 2 * np.pi * turns / (fps * duration)
-        angular_aceleration = aceleration / radius1
+        angular_velocities = []
+        xpositions = []
+        ypositions = []
+        angles = []
         
+        # Aceleración angular calculada como α = a_t / r (en m)
+        angular_acceleration = aceleration / radius1
+
+        # Velocidad angular inicial (calculada sin afectar la física)
+        angular_velocity = 2 * np.pi * turns / (fps * duration)
+
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
             
-            #Aplicar fuerza para cambiar la velocidad angular
-            #if t == time_force_applied:
-            #    angular_velocity += force_value / 1000  # Modificar este valor para ajustar el efecto de la fuerza
-            # Calcular el ángulo actual usando la velocidad angular
-            angular_velocity += aceleration / 3600
-            angle = (angular_velocity * t ) % 360 
+            # Calcular la nueva velocidad angular en cada frame
+            angular_velocity += angular_acceleration / fps
+            angle = (angular_velocity * t) % 360  # El ángulo se calcula usando la velocidad angular
 
             # Posición del círculo
-            x1 = int(center[0] + radius1 * np.cos(angle))
-            y1 = int(center[1] + radius1 * np.sin(angle))
-            cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)
+            x1 = int(center[0] + radius1 * np.cos(angle))  # Usar el radio en píxeles
+            y1 = int(center[1] + radius1 * np.sin(angle))  # Usar el radio en píxeles
+            cv2.circle(frame, (x1, y1), 20, (0, 255, 0), -1)  # Dibujar el círculo en el frame
 
-            # Dibujar el círculo mayor
-            #cv2.circle(frame, center, radius1, (255, 255, 255), 2)
+            # Almacenar posiciones y ángulos para análisis
+            xpositions.append(x1 - center[0])
+            ypositions.append(y1 - center[1])
+            angles.append(angle)
+            angular_velocities.append(angular_velocity)
+            
+            out.write(frame)  # Escribir el frame en el video
 
-            out.write(frame)
-
-        #save_video_info(video_name, duration, radius1, turns, angles, xpositions, ypositions, angular_velocities, acceleration, self.save_path)
+        # Guardar información sobre el video generado
+        save_video_info(video_name, duration, radius1, turns, angles, xpositions, ypositions, angular_velocities, aceleration, self.save_path)
         out.release()
 
 class VideoCalculatorApp:
