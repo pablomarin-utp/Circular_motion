@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from calculate import calculate_moves
-from files import save_video_info, reduce_array_size
+from calculate import calculate_moves, plot_data_from_file
+from files import save_video_info, reduce_array_size, load_video_info
 
 
 class MainApp:
@@ -66,6 +66,11 @@ class VideoGeneratorApp:
         self.acele_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
         self.acele_spinbox.pack(pady=5)
 
+        # Añadir el checkbox para "Aceleración angular 0"
+        self.angular_acceleration_0_var = tk.BooleanVar()  # Variable para verificar el estado del checkbox
+        self.angular_acceleration_0_check = tk.Checkbutton(root, text="Aceleración angular 0", variable=self.angular_acceleration_0_var, font=("Helvetica", 12), bg="#f7f7f7")
+        self.angular_acceleration_0_check.pack(pady=5)
+
         select_path_button = tk.Button(root, text="Seleccionar ruta de guardado", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.select_save_path)
         select_path_button.pack(pady=10)
 
@@ -112,18 +117,23 @@ class VideoGeneratorApp:
         xpositions = np.array([])  
         ypositions = np.array([])  
         angles = np.array([])
-
+        centripetals = np.array([])
         # Aceleración angular calculada como α = a_t / r (en m)
         angular_acceleration = aceleration / radius1
 
+        if self.angular_acceleration_0_var.get():
+            angular_velocity = (2*np.pi*turns - 1/2*(aceleration/radius1)*((duration*fps)**2)) / (duration*fps)
+        else: 
+            angular_velocity = 2 * np.pi * turns / (fps * duration)
+
         # Velocidad angular inicial (calculada sin afectar la física)
-        angular_velocity = 2 * np.pi * turns / (fps * duration)
+        
 
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
 
             # Calcular la nueva velocidad angular en cada frame
-            angular_velocity += angular_acceleration / fps
+            angular_velocity += angular_acceleration / fps  # Añadir la aceleración angular
             angle = (angular_velocity * t)  # El ángulo se calcula usando la velocidad angular
             
             # Posición del círculo
@@ -136,17 +146,19 @@ class VideoGeneratorApp:
             ypositions = np.append(ypositions, y1 - center[1])
             angles = np.append(angles,(np.degrees(angle) % 360))
             angular_velocities = np.append(angular_velocities, angular_velocity)
-
+            centripetals = np.append(centripetals, (angular_velocity**2) * radius1)
             out.write(frame)  # Escribir el frame en el video
 
         # Reducir el tamaño de las listas antes de guardar
-        xpositions = reduce_array_size(xpositions)
-        ypositions = reduce_array_size(ypositions)
-        angles = reduce_array_size(angles)
-        angular_velocities = reduce_array_size(angular_velocities)
+        xpositions = reduce_array_size(xpositions,0)
+        ypositions = reduce_array_size(ypositions,0)
+        angles = reduce_array_size(angles,0)
+        angular_velocities = reduce_array_size(angular_velocities,2)
         print(angles, len(angles))
         # Guardar información sobre el video generado
-        save_video_info(video_name, duration, radius1, turns, angles, xpositions, ypositions, angular_velocities, aceleration, self.save_path)
+        save_video_info(video_name, duration, radius1, turns, angles, xpositions,
+                         ypositions, angular_velocities, aceleration, angular_acceleration,
+                           centripetals, self.save_path)
 
         out.release()
 
@@ -185,6 +197,12 @@ class VideoCalculatorApp:
             return
 
         calculate_moves(self.video_path)
+        # Eliminar la extensión .mp4 y agregar _info.txt
+        video_name,duration, radius1, turns, angles, posx, posy, angular_velocities, aceleration, angular_ac, centripetals = load_video_info(f"{self.video_path.rsplit('.', 1)[0]}_info.txt")
+        
+        plot_data_from_file(video_name, duration, radius1, turns, angles, 
+                    posx, posy, angular_velocities, aceleration, 
+                    angular_ac, centripetals, 30)
         messagebox.showinfo("Éxito", "Cálculo completado.")
 
 if __name__ == "__main__":

@@ -186,3 +186,57 @@ def plot_data(positions, angles, velocities, aceleration, fps, radius):
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_data_from_file(video_name, duration, radius1, turns, angles, 
+                        posx, posy, angular_velocities, aceleration, 
+                        angular_ac, centripetals, fps):
+    """
+    Grafica los datos del video en tres gráficos:
+    1. Ángulo, posición X, posición Y con respecto al tiempo.
+    2. Aceleración tangencial, aceleración angular y aceleración centrípeta con respecto al tiempo.
+    3. Velocidad angular con respecto al tiempo.
+    """
+    
+    # Ajustar el tiempo para que coincida con las posiciones y otros arrays
+    time = np.linspace(0, len(posx) / fps, len(posx))
+    time_angles = np.linspace(0, len(angles) / fps, len(angles))
+    time_velocities = np.linspace(0, len(angular_velocities) / fps, len(angular_velocities))
+    
+    # Crear una figura con tres subgráficas
+    plt.figure(figsize=(12, 12))
+
+    # Gráfico 1: Ángulo, posición X y posición Y con respecto al tiempo
+    plt.subplot(3, 1, 1)
+    plt.plot(time_angles, angles, label='Ángulo', color='blue')
+    plt.plot(time, posx, label='Posición en X', color='red')
+    plt.plot(time, posy, label='Posición en Y', color='green')
+    plt.title('Ángulo y Posiciones X, Y con respecto al tiempo')
+    plt.xlabel('Tiempo (s)')
+    plt.ylabel('Valor')
+    plt.legend()
+    plt.grid(True)
+
+    # Gráfico 2: Aceleración tangencial, angular y centrípeta
+    plt.subplot(3, 1, 2)
+    plt.plot(time, [aceleration for _ in time], label='Aceleración Tangencial', color='purple')
+    plt.plot(time, [angular_ac for _ in time], label='Aceleración Angular', color='orange')
+    plt.plot(time, centripetals, label='Aceleración Centrípeta', color='brown')
+    plt.title('Aceleraciones con respecto al tiempo')
+    plt.xlabel('Tiempo (s)')
+    plt.ylabel('Aceleración (cm/s²)')
+    plt.legend()
+    plt.grid(True)
+
+    # Gráfico 3: Velocidad angular con respecto al tiempo
+    plt.subplot(3, 1, 3)
+    plt.plot(time_velocities, angular_velocities, label='Velocidad Angular', color='cyan')
+    plt.title('Velocidad Angular con respecto al tiempo')
+    plt.xlabel('Tiempo (s)')
+    plt.ylabel('Velocidad Angular (rad/s)')
+    plt.legend()
+    plt.grid(True)
+
+    # Ajustar el layout y mostrar las gráficas
+    plt.tight_layout()
+    plt.show()
