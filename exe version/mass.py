@@ -16,7 +16,7 @@ class MassConfigWindow:
         title_label.pack(pady=10)
 
         # Configuración de número de vueltas
-        self.label_turns = tk.Label(self.root, text="Número de vueltas:", font=("Helvetica", 12), bg="#f7f7f7")
+        self.label_turns = tk.Label(self.root, text="Número de vueltas (sin aceleración):", font=("Helvetica", 12), bg="#f7f7f7")
         self.label_turns.pack(pady=5)
         self.turns_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
         self.turns_spinbox.pack(pady=5)
@@ -33,6 +33,19 @@ class MassConfigWindow:
         self.masac_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
         self.masac_spinbox.pack(pady=5)
 
+        #Preguntar en qué segundo se aplicará la fuerza 
+        self.force_time = tk.Label(self.root, text="En qué segundo se aplicará la fuerza \n(vacío si no se aplicará):", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_time.pack(pady=5)
+        self.force_time_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_time_spinbox.pack(pady=5)
+
+        #Preguntar cuánto será la fuerza aplicada
+        self.force_value = tk.Label(self.root, text="Cuánto será la fuerza aplicada\n(vacío si no se aplicará):", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_value.pack(pady=5)
+        self.force_value_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_value_spinbox.pack(pady=5)
+
+                              
         # Configuración del color
         self.color_label = tk.Label(self.root, text="Color del objeto:", font=("Helvetica", 12), bg="#f7f7f7")
         self.color_label.pack(pady=5)
@@ -61,6 +74,8 @@ class MassConfigWindow:
         turns = self.get_turns()
         acceleration = self.get_acceleration()
         mass = self.get_mass()
+        force_time = self.get_force()
+        force_value = self.get_force_value()
 
         # Verificar que exactamente un color esté seleccionado
         selected_colors = [color for color, var in self.color_vars.items() if var.get() == 1]
@@ -76,8 +91,11 @@ class MassConfigWindow:
             "acceleration": acceleration,
             "mass": mass,
             "color": self.colors[selected_color],
+            "force": force_time,
+            "force_value": force_value
         }
         
+
         # Transferir los datos a la clase principal
         self.parent.mass_config_data = self.saved_data
         
@@ -96,6 +114,11 @@ class MassConfigWindow:
 
     def get_saved_data(self):
         return self.saved_data
+    def get_force(self):
+        return int(self.force_time_spinbox.get())
+    def get_force_value(self):
+        return int(self.force_value_spinbox.get())
+
 
 
 class VideoGeneratorApp:
@@ -123,10 +146,6 @@ class VideoGeneratorApp:
         self.label_radius1.pack(pady=5)
         self.radius1_spinbox = tk.Spinbox(root, from_=1, to=500, font=("Helvetica", 12), width=5)
         self.radius1_spinbox.pack(pady=5)
-
-        self.angular_acceleration_0_var = tk.BooleanVar()
-        self.angular_acceleration_0_check = tk.Checkbutton(root, text="Aceleración angular 0", variable=self.angular_acceleration_0_var, font=("Helvetica", 12), bg="#f7f7f7")
-        self.angular_acceleration_0_check.pack(pady=5)
 
         select_path_button = tk.Button(root, text="Seleccionar ruta de guardado", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.select_save_path)
         select_path_button.pack(pady=10)
@@ -171,8 +190,11 @@ class VideoGeneratorApp:
         acceleration = self.mass_config_data["acceleration"]
         mass = self.mass_config_data["mass"]
         color = self.mass_config_data["color"]
+        force_time = self.mass_config_data["force"]
+        force_value = self.mass_config_data["force_value"]
+
         # Crear el video
-        self.create_video(video_name, duration, radius1, turns, [2, 100], acceleration, mass, color)
+        self.create_video(video_name, duration, radius1, turns, [force_time,force_value], acceleration, mass, color)
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
 
@@ -194,21 +216,14 @@ class VideoGeneratorApp:
         centripetals = np.array([])
 
         # Aceleración angular calculada como α = a_t / r (en m)
-        angular_acceleration = aceleration / radius1
-
-        if self.angular_acceleration_0_var.get():
-            angular_velocity = (2*np.pi*turns - 1/2*(aceleration/radius1)*((duration*fps)**2)) / (duration*fps)
-        else: 
-            angular_velocity = 2 * np.pi * turns / (fps * duration)
-
-        # Velocidad angular inicial (calculada sin afectar la física)
-        
+        angular_acceleration = aceleration / radius1        
 
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
 
-            # Calcular la nueva velocidad angular en cada frame
-            
+            # Aplicar la fuerza en el fotograma correspondiente 
+            if t == time_force_applied:
+                angular_velocity += force_value / mass
             
             angular_velocity += (angular_acceleration / fps) 
 

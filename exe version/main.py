@@ -1,5 +1,3 @@
-import sys
-import cv2
 import numpy as np
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -16,7 +14,7 @@ class MainApp:
 
         title_label = tk.Label(root, text="Menú Principal", font=("Helvetica", 18, "bold"), bg="#f7f7f7", fg="#333")
         title_label.pack(pady=20)
-
+        
         generate_button = tk.Button(root, text="Generar Video", font=("Helvetica", 14), bg="#4CAF50", fg="white", command=self.open_video_generator)
         generate_button.pack(pady=10)
 
