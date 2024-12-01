@@ -45,6 +45,7 @@ class MassConfigWindow:
             "Amarillo": (0, 255, 255), # #FFFF00 en BGR
             "Naranja": (0, 165, 255),  # #FFA500 en BGR
         }
+
         self.color_vars = {color: tk.IntVar() for color in self.colors}
         for color, var in self.color_vars.items():
             tk.Checkbutton(self.root, text=color, variable=var, font=("Helvetica", 12), bg="#f7f7f7").pack(anchor="w", padx=20)
@@ -53,37 +54,62 @@ class MassConfigWindow:
         save_button = tk.Button(self.root, text="Guardar", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.save_config)
         save_button.pack(pady=10)
 
+        # Botón de omitir
+        skip_button = tk.Button(self.root, text="Omitir configuración", font=("Helvetica", 12), bg="#FF5722", fg="white", command=self.skip_config)
+        skip_button.pack(pady=5)
+
         # Para almacenar los valores guardados
-        self.saved_data = {}
+        self.saved_data = []
 
     def save_config(self):
-        # Obtener los valores ingresados
-        turns = self.get_turns()
-        acceleration = self.get_acceleration()
-        mass = self.get_mass()
-
-        # Verificar que exactamente un color esté seleccionado
-        selected_colors = [color for color, var in self.color_vars.items() if var.get() == 1]
-        if len(selected_colors) != 1:
-            messagebox.showerror("Error", "Debe seleccionar exactamente un color.")
-            return
-
-        selected_color = selected_colors[0]
-
-        # Guardar los datos
-        self.saved_data = {
-            "turns": turns,
-            "acceleration": acceleration,
-            "mass": mass,
-            "color": self.colors[selected_color],
-        }
+        # Crear una lista de colores (suponiendo que tienes una lista de colores predefinida)
+        available_colors = list(self.color_vars.keys())  # Aquí asumo que self.color_vars tiene colores como claves
         
+        # Crear tres diccionarios en un ciclo
+        for i in range(3):
+            # Obtener los valores ingresados
+            turns = self.get_turns()
+            acceleration = self.get_acceleration()
+            mass = self.get_mass()
+
+            # Verificar que exactamente un color esté seleccionado en cada iteración
+            selected_color = available_colors[i % len(available_colors)]  # Seleccionamos un color de forma cíclica
+
+            # Guardar los datos en el diccionario
+            self.saved_data.append({
+                "turns": turns,
+                "acceleration": acceleration,
+                "mass": mass,
+                "color": self.colors[selected_color],  # Se usa el color correspondiente
+            })
+            
+            # Limpiar los campos para la próxima iteración
+            self.clear_fields()
+
         # Transferir los datos a la clase principal
-        self.parent.mass_config_data = self.saved_data
-        
-        messagebox.showinfo("Guardado", "La configuración se ha guardado correctamente.")
+        self.parent.mass_config_data.extend(self.saved_data)
+
+        # Verificar si se ha alcanzado el límite de tres configuraciones
+        if len(self.saved_data) >= 3:
+            messagebox.showinfo("Guardado", "Se ha alcanzado el máximo de masas configuradas.")
+            self.root.destroy()
+        else:
+            messagebox.showinfo("Guardado", "La configuración se ha guardado correctamente. ¿Desea configurar otra masa?")
+
+    def skip_config(self):
+        # Omitir la configuración y guardar una lista vacía
+        self.saved_data = []
+        self.parent.mass_config_data.append(self.saved_data)
         self.root.destroy()
 
+
+    def clear_fields(self):
+        # Limpiar los campos para permitir configurar otra masa
+        self.turns_spinbox.delete(0, tk.END)
+        self.acele_spinbox.delete(0, tk.END)
+        self.masac_spinbox.delete(0, tk.END)
+        for var in self.color_vars.values():
+            var.set(0)
 
     def get_turns(self):
         return int(self.turns_spinbox.get())
@@ -100,7 +126,6 @@ class MassConfigWindow:
 
 class VideoGeneratorApp:
     def __init__(self, root):
-        
         self.root = root
         self.root.title("Generador de Video")
         self.root.geometry("400x500")
@@ -141,17 +166,14 @@ class VideoGeneratorApp:
         generate_button.pack(pady=20)
 
         self.save_path = ""
-        self.mass_config = None  # Para almacenar la referencia a la ventana de configuración de masa
-        self.mass_config_data = {}  # Para almacenar los datos guardados de la configuración
+        self.mass_config = None  # Para almacenar la referencia a la ventana de configuración de masas
+
+    def open_mass_config(self):
+        self.mass_config = MassConfigWindow(self)
 
     def select_save_path(self):
         self.save_path = filedialog.askdirectory()
-        if self.save_path:
-            self.save_path_label.config(text=f"Ruta seleccionada: {self.save_path}")
-
-    def open_mass_config(self):
-        if self.mass_config is None or not tk.Toplevel.winfo_exists(self.mass_config.root):
-            self.mass_config = MassConfigWindow(self)
+        self.save_path_label.config(text=f"Ruta seleccionada: {self.save_path}")
 
     def generate_video(self):
         video_name = self.video_name_entry.get()
@@ -172,20 +194,20 @@ class VideoGeneratorApp:
         mass = self.mass_config_data["mass"]
         color = self.mass_config_data["color"]
         # Crear el video
-        self.create_video(video_name, duration, radius1, turns, [2, 100], acceleration, mass, color)
+        self.create_video(video_name, duration, radius1, turns, acceleration, mass, color)
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
-
-    def create_video(self, video_name, duration, radius1, turns, forces, aceleration, mass, color):
+    
+    def create_video(self, video_name, duration, radius1, turns, aceleration, mass, color):
         fps = 30
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
-        time_force_applied = forces[0] * fps - 1  # Momento en el que se aplica la fuerza, en fotogramas
-        force_value = forces[1]  # Magnitud de la fuerza aplicada
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
+
+
         torque = mass * aceleration * radius1
         angular_velocities = np.array([])  # Usar arrays de NumPy
         xpositions = np.array([])  
@@ -239,4 +261,5 @@ class VideoGeneratorApp:
                            centripetals, torque, self.save_path)
 
         out.release()
+
 
