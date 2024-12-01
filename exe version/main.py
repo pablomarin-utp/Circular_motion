@@ -35,7 +35,7 @@ class VideoGeneratorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Generador de Video")
-        self.root.geometry("400x700")
+        self.root.geometry("400x800")
         self.root.configure(bg="#f7f7f7")
 
         title_label = tk.Label(root, text="Generador de Video Circular", font=("Helvetica", 18, "bold"), bg="#f7f7f7", fg="#333")
@@ -51,7 +51,7 @@ class VideoGeneratorApp:
         self.duration_spinbox = tk.Spinbox(root, from_=1, to=300, font=("Helvetica", 12), width=5)
         self.duration_spinbox.pack(pady=5)
 
-        self.label_radius1 = tk.Label(root, text="Radio del primer círculo (píxeles):\n(En este sistema, 1px = 1 cm)", font=("Helvetica", 12), bg="#f7f7f7")
+        self.label_radius1 = tk.Label(root, text="Radio del círculo (píxeles):\n(En este sistema, 1px = 1 cm)", font=("Helvetica", 12), bg="#f7f7f7")
         self.label_radius1.pack(pady=5)
         self.radius1_spinbox = tk.Spinbox(root, from_=1, to=500, font=("Helvetica", 12), width=5)
         self.radius1_spinbox.pack(pady=5)
@@ -66,6 +66,15 @@ class VideoGeneratorApp:
         self.acele_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
         self.acele_spinbox.pack(pady=5)
 
+        self.masac = tk.Label(root, text="¿Cúal será la masa del objeto (en kg)?", font=("Helvetica", 12), bg="#f7f7f7")
+        self.masac.pack(pady=5)
+        self.masac_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.masac_spinbox.pack(pady=5)
+
+        self.masap = tk.Label(root, text="¿Cúal será la masa de la polea (en kg)?", font=("Helvetica", 12), bg="#f7f7f7")
+        self.masap.pack(pady=5)
+        self.masap_spinbox = tk.Spinbox(root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.masap_spinbox.pack(pady=5)
         # Añadir el checkbox para "Aceleración angular 0"
         self.angular_acceleration_0_var = tk.BooleanVar()  # Variable para verificar el estado del checkbox
         self.angular_acceleration_0_check = tk.Checkbutton(root, text="Aceleración angular 0", variable=self.angular_acceleration_0_var, font=("Helvetica", 12), bg="#f7f7f7")
@@ -112,12 +121,15 @@ class VideoGeneratorApp:
         video_path = f"{self.save_path}/{video_name}.mp4"
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
-        
+        masa_cuerpo = int(self.masac_spinbox.get())
+        masa_polea = int(self.masap_spinbox.get())
+        torque = 1/2 * masa_polea * aceleration * radius1
         angular_velocities = np.array([])  # Usar arrays de NumPy
         xpositions = np.array([])  
         ypositions = np.array([])  
         angles = np.array([])
         centripetals = np.array([])
+
         # Aceleración angular calculada como α = a_t / r (en m)
         angular_acceleration = aceleration / radius1
 
@@ -133,9 +145,12 @@ class VideoGeneratorApp:
             frame = np.zeros((height, width, 3), dtype=np.uint8)
 
             # Calcular la nueva velocidad angular en cada frame
-            angular_velocity += angular_acceleration / fps  # Añadir la aceleración angular
-            angle = (angular_velocity * t)  # El ángulo se calcula usando la velocidad angular
             
+            
+            angular_velocity += (angular_acceleration / fps) 
+
+            angle = (angular_velocity * t)  # El ángulo se calcula usando la velocidad angular
+
             # Posición del círculo
             x1 = int(center[0] + radius1 * np.cos(angle))  # Usar el radio en píxeles
             y1 = int(center[1] + radius1 * np.sin(angle))  # Usar el radio en píxeles
@@ -158,7 +173,7 @@ class VideoGeneratorApp:
         # Guardar información sobre el video generado
         save_video_info(video_name, duration, radius1, turns, angles, xpositions,
                          ypositions, angular_velocities, aceleration, angular_acceleration,
-                           centripetals, self.save_path)
+                           centripetals, torque, self.save_path)
 
         out.release()
 
@@ -198,11 +213,12 @@ class VideoCalculatorApp:
 
         calculate_moves(self.video_path)
         # Eliminar la extensión .mp4 y agregar _info.txt
-        video_name,duration, radius1, turns, angles, posx, posy, angular_velocities, aceleration, angular_ac, centripetals = load_video_info(f"{self.video_path.rsplit('.', 1)[0]}_info.txt")
+        print(f"{self.video_path.rsplit('.', 1)[0]}_info.txt")
+        video_name,duration, radius1, turns, angles, posx, posy, angular_velocities, aceleration, angular_ac, centripetals,torque = load_video_info(f"{self.video_path.rsplit('.', 1)[0]}_info.txt")
         
         plot_data_from_file(video_name, duration, radius1, turns, angles, 
                     posx, posy, angular_velocities, aceleration, 
-                    angular_ac, centripetals, 30)
+                    angular_ac, centripetals,torque, 30 )
         messagebox.showinfo("Éxito", "Cálculo completado.")
 
 if __name__ == "__main__":

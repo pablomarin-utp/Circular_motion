@@ -10,7 +10,7 @@ def reduce_array_size(arr,num=0, max_length=1024):
     return np.round(arr,num)  # Convertir a enteros
 def save_video_info(video_name, duration, radius1, turns, angles, 
                     posx, posy, angular_velocities, aceleration, 
-                    angular_ac, centripetals ,save_path):
+                    angular_ac, centripetals, torque , save_path):
     """
     Guarda información del video en un archivo de texto, asegurándose de que los arrays
     tengan un tamaño menor a 2048 elementos y sin decimales.
@@ -46,7 +46,8 @@ def save_video_info(video_name, duration, radius1, turns, angles,
 
             # Guardar aceleraciones centrípetas
             f.write(" ".join(map(str, centripetals)) + "\n")
-                    
+            f.write(f"{torque}\n")
+
         print(f"Información del video guardada exitosamente en {file_path}.")
     except Exception as e:
         print(f"Error al guardar la información: {e}")
@@ -78,8 +79,8 @@ def load_video_info(file_path):
             posy = list(map(float, lines[9].split()))
             angular_velocities = list(map(float, lines[10].split()))
             centripetals = list(map(float, lines[11].split()))
-
-        return video_name, duration, radius1, turns, angles, posx, posy, angular_velocities, aceleration, angular_ac, centripetals
+            torque = float(lines[12])            
+        return video_name, duration, radius1, turns, angles, posx, posy, angular_velocities, aceleration, angular_ac, centripetals, torque
     except Exception as e:
         print(f"Error al cargar la información: {e}")
         return None
