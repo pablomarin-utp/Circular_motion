@@ -23,10 +23,12 @@ class MainApp:
 
     def open_video_generator(self):
         generator_window = tk.Toplevel(self.root)
+        generator_window.geometry("400x300+500+100")
         VideoGeneratorApp(generator_window)
 
     def open_video_calculator(self):
         calculator_window = tk.Toplevel(self.root)
+        calculator_window.geometry("400x300+900+100") 
         VideoCalculatorApp(calculator_window)
 
 
