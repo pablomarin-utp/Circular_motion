@@ -4,6 +4,12 @@ import numpy as np
 import cv2
 from files import save_video_info, reduce_array_size, load_video_info
 
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import numpy as np
+import cv2
+from files import save_video_info, reduce_array_size, load_video_info
+
 class MassConfigWindow:
     def __init__(self, parent):
         self.parent = parent
@@ -33,19 +39,6 @@ class MassConfigWindow:
         self.masac_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
         self.masac_spinbox.pack(pady=5)
 
-        #Preguntar en qué segundo se aplicará la fuerza 
-        self.force_time = tk.Label(self.root, text="En qué segundo se aplicará la fuerza \n(vacío si no se aplicará):", font=("Helvetica", 12), bg="#f7f7f7")
-        self.force_time.pack(pady=5)
-        self.force_time_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
-        self.force_time_spinbox.pack(pady=5)
-
-        #Preguntar cuánto será la fuerza aplicada
-        self.force_value = tk.Label(self.root, text="Cuánto será la fuerza aplicada\n(vacío si no se aplicará):", font=("Helvetica", 12), bg="#f7f7f7")
-        self.force_value.pack(pady=5)
-        self.force_value_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
-        self.force_value_spinbox.pack(pady=5)
-
-                              
         # Configuración del color
         self.color_label = tk.Label(self.root, text="Color del objeto:", font=("Helvetica", 12), bg="#f7f7f7")
         self.color_label.pack(pady=5)
@@ -62,6 +55,10 @@ class MassConfigWindow:
         for color, var in self.color_vars.items():
             tk.Checkbutton(self.root, text=color, variable=var, font=("Helvetica", 12), bg="#f7f7f7").pack(anchor="w", padx=20)
 
+        # Botón para abrir la ventana de fuerzas
+        force_button = tk.Button(self.root, text="Configurar Fuerzas", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.open_force_window)
+        force_button.pack(pady=10)
+
         # Botón de guardar
         save_button = tk.Button(self.root, text="Guardar", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.save_config)
         save_button.pack(pady=10)
@@ -69,13 +66,14 @@ class MassConfigWindow:
         # Para almacenar los valores guardados
         self.saved_data = {}
 
+    def open_force_window(self):
+        ForceConfigWindow(self)
+
     def save_config(self):
         # Obtener los valores ingresados
         turns = self.get_turns()
         acceleration = self.get_acceleration()
         mass = self.get_mass()
-        force_time = self.get_force()
-        force_value = self.get_force_value()
 
         # Verificar que exactamente un color esté seleccionado
         selected_colors = [color for color, var in self.color_vars.items() if var.get() == 1]
@@ -91,17 +89,14 @@ class MassConfigWindow:
             "acceleration": acceleration,
             "mass": mass,
             "color": self.colors[selected_color],
-            "force": force_time,
-            "force_value": force_value
+            "forces": self.forces_saved      
         }
-        
 
         # Transferir los datos a la clase principal
         self.parent.mass_config_data = self.saved_data
         
         messagebox.showinfo("Guardado", "La configuración se ha guardado correctamente.")
         self.root.destroy()
-
 
     def get_turns(self):
         return int(self.turns_spinbox.get())
@@ -112,14 +107,73 @@ class MassConfigWindow:
     def get_mass(self):
         return int(self.masac_spinbox.get())
 
-    def get_saved_data(self):
-        return self.saved_data
-    def get_force(self):
-        return int(self.force_time_spinbox.get())
-    def get_force_value(self):
-        return int(self.force_value_spinbox.get())
+class ForceConfigWindow:
+    def __init__(self, parent):
+        self.parent = parent
+        self.root = tk.Toplevel(parent.root)
+        self.root.title("Configuración de Fuerzas Aplicadas")
+        self.root.geometry("400x600")
+        self.root.configure(bg="#f7f7f7")
+
+        title_label = tk.Label(self.root, text="Configuración de Fuerzas Aplicadas", font=("Helvetica", 18, "bold"), bg="#f7f7f7", fg="#333")
+        title_label.pack(pady=10)
+
+        # Configuración de tres fuerzas
+        self.label_forces = tk.Label(self.root, text="Configuración de Tres Fuerzas Aplicadas", font=("Helvetica", 14, "bold"), bg="#f7f7f7")
+        self.label_forces.pack(pady=10)
+
+        # Configuración para tres momentos de aplicación de fuerzas
+        self.force_time1 = tk.Label(self.root, text="En qué segundo se aplicará la primera fuerza:", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_time1.pack(pady=5)
+        self.force_time1_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_time1_spinbox.pack(pady=5)
+
+        self.force_value1 = tk.Label(self.root, text="Cuánto será la primera fuerza aplicada:", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_value1.pack(pady=5)
+        self.force_value1_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_value1_spinbox.pack(pady=5)
+
+        self.force_time2 = tk.Label(self.root, text="En qué segundo se aplicará la segunda fuerza:", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_time2.pack(pady=5)
+        self.force_time2_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_time2_spinbox.pack(pady=5)
+
+        self.force_value2 = tk.Label(self.root, text="Cuánto será la segunda fuerza aplicada:", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_value2.pack(pady=5)
+        self.force_value2_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_value2_spinbox.pack(pady=5)
+
+        self.force_time3 = tk.Label(self.root, text="En qué segundo se aplicará la tercera fuerza:", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_time3.pack(pady=5)
+        self.force_time3_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_time3_spinbox.pack(pady=5)
+
+        self.force_value3 = tk.Label(self.root, text="Cuánto será la tercera fuerza aplicada:", font=("Helvetica", 12), bg="#f7f7f7")
+        self.force_value3.pack(pady=5)
+        self.force_value3_spinbox = tk.Spinbox(self.root, from_=1, to=100, font=("Helvetica", 12), width=5)
+        self.force_value3_spinbox.pack(pady=5)
 
 
+        # Botón de guardar
+        save_button = tk.Button(self.root, text="Guardar Fuerzas", font=("Helvetica", 12), bg="#4CAF50", fg="white", command=self.save_forces)
+        save_button.pack(pady=10)
+
+    def save_forces(self):
+        force_time1 = int(self.force_time1_spinbox.get())
+        force_value1 = int(self.force_value1_spinbox.get())
+        force_time2 = int(self.force_time2_spinbox.get())
+        force_value2 = int(self.force_value2_spinbox.get())
+        force_time3 = int(self.force_time3_spinbox.get())
+        force_value3 = int(self.force_value3_spinbox.get())
+
+        self.parent.forces_saved = [
+            [force_time1, force_value1],
+            [force_time2, force_value2],
+            [force_time3, force_value3]
+        ]
+        
+        messagebox.showinfo("Guardado", "La configuración de las fuerzas se ha guardado correctamente.")
+        self.root.destroy()
 
 class VideoGeneratorApp:
     def __init__(self, root):
@@ -190,11 +244,9 @@ class VideoGeneratorApp:
         acceleration = self.mass_config_data["acceleration"]
         mass = self.mass_config_data["mass"]
         color = self.mass_config_data["color"]
-        force_time = self.mass_config_data["force"]
-        force_value = self.mass_config_data["force_value"]
-
+        forces = self.mass_config_data["forces"]
         # Crear el video
-        self.create_video(video_name, duration, radius1, turns, [force_time,force_value], acceleration, mass, color)
+        self.create_video(video_name, duration, radius1, turns, forces, acceleration, mass, color)
         messagebox.showinfo("Éxito", f"Video generado correctamente en {self.save_path}")
 
 
@@ -203,9 +255,8 @@ class VideoGeneratorApp:
         width, height = 640, 480
         center = (width // 2, height // 2)
         total_frames = int(duration * fps)
-        time_force_applied = forces[0] * fps - 1  # Momento en el que se aplica la fuerza, en fotogramas
-        force_value = forces[1]  # Magnitud de la fuerza aplicada
         video_path = f"{self.save_path}/{video_name}.mp4"
+        forcenum = 0
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(video_path, fourcc, fps, (width, height))
         torque = mass * aceleration * radius1
@@ -213,17 +264,18 @@ class VideoGeneratorApp:
         xpositions = np.array([])  
         ypositions = np.array([])  
         angles = np.array([])
-        centripetals = np.array([])
-
+        centripetals = np.array([])  # Velocidad angular en radianes/segundo
+        print(f"forces : {forces}")
         # Aceleración angular calculada como α = a_t / r (en m)
         angular_acceleration = aceleration / radius1        
-
+        angular_velocity = 2 * np.pi * turns  / (fps * duration)
         for t in range(total_frames):
             frame = np.zeros((height, width, 3), dtype=np.uint8)
 
             # Aplicar la fuerza en el fotograma correspondiente 
-            if t == time_force_applied:
-                angular_velocity += force_value / mass
+            if len(forces) > 0 and forcenum < len(forces) and  t == forces[forcenum][0]*fps:
+                angular_velocity += forces[forcenum][1] / mass / radius1
+                forcenum += 1
             
             angular_velocity += (angular_acceleration / fps) 
 

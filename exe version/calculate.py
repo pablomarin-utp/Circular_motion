@@ -112,10 +112,9 @@ def calculate_moves(video_path):
         window += 1
 
     # Aplicar el filtro de Savitzky-Golay a las velocidades
-    smoothed_velocities = savgol_filter(velocities, int(window), int(window - 1))
 
     # Graficar resultados
-    plot_data(positions, angles, smoothed_velocities, aceleration, fps, radius)
+    plot_data(positions, angles, velocities, aceleration, fps, radius)
 
 def plot_data(positions, angles, velocities, aceleration, fps, radius):
 
@@ -231,13 +230,12 @@ def plot_data_from_file(video_name, duration, radius1, turns, angles,
     # Gráfico 3: Velocidad angular con respecto al tiempo
     plt.subplot(3, 1, 3)
     plt.plot(time_velocities, angular_velocities, label='Velocidad Angular', color='cyan')
-    plt.plot(torques, torques, 'ro', label='Torque')
-    plt.title('Velocidad Angular y torque con respecto al tiempo')
+    plt.title('Velocidad Angular con respecto al tiempo')
     plt.xlabel('Tiempo (s)')
     plt.ylabel('Velocidad Angular (rad/s)')
     plt.legend()
     plt.grid(True)
-
+    
     # Ajustar el layout y mostrar las gráficas
     plt.tight_layout()
     plt.show()
