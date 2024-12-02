@@ -71,7 +71,7 @@ class VideoCalculatorApp:
         plot_data_from_file(video_name, duration, radius1, turns, angles, 
                     posx, posy, angular_velocities, aceleration, 
                     angular_ac, centripetals,torque, 30 )
-        messagebox.showinfo("Éxito", "Cálculo completado.")
+        messagebox.showinfo("Fin del informe.", "El torque es: " + str(torque) + " Nm")
 
 if __name__ == "__main__":
     root = tk.Tk()
