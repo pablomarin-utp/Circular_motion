@@ -1,5 +1,6 @@
 # Circular Motion Simulation
 Download the .exe: https://drive.google.com/file/d/1KuIaeefO8cImF3JW2K2_Kyj7u59Qb73z/view?usp=sharing
+Deployment in react and explantation: https://circular-motion-pink.vercel.app/
 ## Table of Contents
 - [Overview](#overview)
 - [Features](#features)
