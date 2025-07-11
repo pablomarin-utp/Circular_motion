@@ -1,5 +1,5 @@
 # Circular Motion Simulation
-Download the .exe: https://drive.google.com/file/d/1KuIaeefO8cImF3JW2K2_Kyj7u59Qb73z/view?usp=sharing
+Download the .exe: https://drive.google.com/drive/folders/1G5BhYLVOjllsJ3z1-bDs9ozBlvR2yuxp?usp=sharing
 
 Deployment and explantation: https://circular-motion-pink.vercel.app/
 ## Table of Contents
