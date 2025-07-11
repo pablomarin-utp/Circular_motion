@@ -28,7 +28,6 @@ This project simulates circular motion, allowing users to visualize and understa
 - **Python**: The core programming language.
 - **Matplotlib**: For plotting and visualizing circular motion.
 - **NumPy**: For numerical calculations and data handling.
-- **Pygame** (optional): For a more interactive experience (if implemented).
 
 ## Installation
 
